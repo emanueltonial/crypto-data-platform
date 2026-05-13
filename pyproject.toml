@@ -1,0 +1,51 @@
+[project]
+name = "crypto-flow"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi[standard]>=0.136.1",
+    "openpyxl>=3.1.5",
+    "pandas>=3.0.3",
+    "requests>=2.34.0",
+    "ruff>=0.15.12",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+
+[tool.ruff.lint]
+# Enable specific rule sets
+select = [
+    "E",    # pycodestyle errors
+    "F",    # Pyflakes
+    "I",    # isort (import sorting)
+    "UP",   # pyupgrade (modern Python syntax)
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "FAST", # FastAPI-specific rules (e.g., FAST002 for Annotated)
+    "T20",  # flake8-print (prevent accidental prints in production)
+]
+
+ignore = [
+    "D",    # Ignore missing docstrings for basic projects
+]
+
+[tool.ruff.lint.isort]
+# Ensure imports are grouped correctly for FastAPI projects
+known-first-party = ["app"]
+
+[tool.ruff.format]
+# Use double quotes, similar to Black
+quote-style = "double"
+indent-style = "space"
+# Respect magic trailing commas
+skip-magic-trailing-comma = false
+# Automatically detect the appropriate line ending
+line-ending = "auto"
+

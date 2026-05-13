@@ -1,0 +1,33 @@
+# git
+.git
+.gitignore
+
+# cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.ipynb_checkpoints
+
+# venvs
+.venv/
+venv/
+env/
+dist/
+build/
+
+# docker and ci/cd
+Dockerfile
+docker-compose.yml
+.github/
+.gitlab-ci.yml
+
+# secrets 
+.env
+.env.*
+
+# docs and tests 
+tests/
+docs/
+*.md
