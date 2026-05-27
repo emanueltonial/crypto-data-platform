@@ -2,11 +2,10 @@ from datetime import datetime
 from decimal import Decimal
 
 from sqlalchemy import BigInteger, Boolean, DateTime, Index, Integer, Numeric, String
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column
 
+from app.core.database import Base
 
-class Base(DeclarativeBase):
-    pass
 
 class Trade(Base):
     __tablename__="trades"
