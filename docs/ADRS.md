@@ -57,3 +57,11 @@
 **Why:** Validates extraction and transformation without introducing database complexity early. Output is inspectable without a running Postgres instance.
 
 **Status:** Explicitly temporary. PostgreSQL via `TradeRepository` is the target persistence layer.
+
+## ADR 007 — on_conflict_do_nothing for duplicate trades
+
+**Decision:** The repository uses `on_conflict_do_nothing` based on `trade_id`.
+
+**Why:** Binance trade data is immutable — a `trade_id` never changes after execution. Ignoring duplicates is the correct behavior.
+
+**Trade-off:** No visibility into how many records were actually inserted vs. ignored. Acceptable given that the pipeline is idempotent by design.
