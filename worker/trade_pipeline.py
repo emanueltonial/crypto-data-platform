@@ -1,11 +1,14 @@
+import asyncio
 import logging
 from pathlib import Path
 
 import httpx
 import pandas as pd
 
+from app.core.database import AsyncSessionLocal
 from app.core.logging import setup_logging
 from app.core.settings import settings
+from app.services.trade_service import TradeService
 
 logger = logging.getLogger("crypto_flow.worker.trade_pipeline")
 
@@ -17,14 +20,14 @@ class BinanceWorker:
     """Worker responsible for fetching, transforming, and saving trade data from Binance."""  # noqa: E501
 
     def __init__(self) -> None:
-        self.client = httpx.Client(base_url=settings.binance_base_url, timeout=10)
+        self.client = httpx.AsyncClient(base_url=settings.binance_base_url, timeout=10)
 
-    def fetch_data(
+    async def fetch_data(
         self, endpoint: str, params: dict[str, str | int] | None = None
     ) -> list | None:
         logger.info(f"Starting request | endpoint={endpoint} | params={params}")
         try:
-            response = self.client.get(endpoint, params=params)
+            response = await self.client.get(endpoint, params=params)
             response.raise_for_status()
             logger.info(f"Request finished | status={response.status_code}")
             return response.json()
@@ -38,10 +41,10 @@ class BinanceWorker:
             logger.exception("Unexpected error in fetch_data")
         return None
 
-    def transform(self, raw_data: list, symbol: str) -> pd.DataFrame:
+    async def transform(self, raw_data: list, symbol: str) -> list[dict]:
         logger.info(f"Starting transformation | symbol={symbol} | records={len(raw_data)}") # noqa: E501
+        
         df = pd.DataFrame(raw_data)
-
         df["price"] = df["price"].astype(float)
         df["qty"] = df["qty"].astype(float)
         df["quoteQty"] = df["quoteQty"].astype(float)
@@ -54,42 +57,40 @@ class BinanceWorker:
             "isBestMatch": "is_best_match",
         })
         df["symbol"] = symbol
+        
         logger.info(f"Transformation finished | symbol={symbol} | shape={df.shape}")
-        return df
+        return df.to_dict(orient="records")
 
-    def save(self, df: pd.DataFrame, filename: str) -> None:
-        """Temporary persistence, gonna be replaced by Postgres via repository."""
-        filepath = OUTPUT_DIR / filename
-        try:
-            df_excel = df.copy()
-            df_excel["time"] = df_excel["time"].dt.tz_localize(None)
-            df_excel.to_excel(filepath, index=False)
-            logger.info(f"Data saved | file={filepath} | records={len(df)}")
-        except Exception:
-            logger.exception(f"Failed to save file {filepath}")
+    async def persist(self, trades: list[dict], symbol: str) -> None:
+        async with AsyncSessionLocal() as session:
+            service = TradeService(session)
+            inserted = await service.bulk_insert_trades(trades)
+            
+            logger.info(f"Data persisted | symbol={symbol} | records={inserted}")
 
-    def run(self) -> None:
+    async def run(self) -> None:
         logger.info("Ingestion started")
         total_records = 0
+        try:
+            for symbol in settings.binance_symbols:
+                raw = await self.fetch_data(
+                    "/trades",
+                    params={"symbol": symbol, "limit": settings.binance_limit},
+                )
+                if raw is None:
+                    logger.warning(f"No data for {symbol}. Skipping.")
+                    continue
+                
+                trades = await self.transform(raw, symbol)
+                await self.persist(trades, symbol)
+                total_records += len(trades)
 
-        for symbol in settings.binance_symbols:
-            raw = self.fetch_data(
-                "/trades",
-                params={"symbol": symbol, "limit": settings.binance_limit},
-            )
-            if raw is None:
-                logger.warning(f"No data for {symbol}. Skipping.")
-                continue
-
-            df = self.transform(raw, symbol)
-            self.save(df, filename=f"trades_{symbol}.xlsx")
-            total_records += len(df)
-
-        logger.info(f"Ingestion finished | total_records={total_records}")
-        self.client.close()
+                logger.info(f"Ingestion finished | total_records={total_records}")
+        finally:
+            await self.client.aclose()
 
 
 if __name__ == "__main__":
     setup_logging()
     worker = BinanceWorker()
-    worker.run()
+    asyncio.run(worker.run())
