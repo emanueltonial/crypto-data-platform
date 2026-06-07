@@ -1,4 +1,4 @@
-# Crypto Flow
+# Crypto Data Platform
 
 Data pipeline for ingesting cryptocurrency market data from the Binance REST API,
 transforming it, and exposing it via FastAPI.

@@ -2,7 +2,7 @@
 
 ## Overview
 
-Crypto Flow is intentionally split into two hard concerns with no cross-contamination:
+Crypto Data Platform is intentionally split into two hard concerns with no cross-contamination:
 
 - **`worker/`** — pulls data from Binance, transforms it, and persists it
 - **`app/`** — serves already-persisted data via HTTP

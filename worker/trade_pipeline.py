@@ -10,7 +10,7 @@ from app.core.logging import setup_logging
 from app.core.settings import settings
 from app.services.trade_service import TradeService
 
-logger = logging.getLogger("crypto_flow.worker.trade_pipeline")
+logger = logging.getLogger("crypto-data-platform.worker.trade_pipeline")
 
 OUTPUT_DIR = Path("data")
 OUTPUT_DIR.mkdir(exist_ok=True)
