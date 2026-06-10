@@ -8,6 +8,7 @@ import pandas as pd
 from app.core.database import AsyncSessionLocal
 from app.core.logging import setup_logging
 from app.core.settings import settings
+from app.repositories.trade_repository import TradeRepository
 from app.services.trade_service import TradeService
 
 logger = logging.getLogger("crypto-data-platform.worker.trade_pipeline")
@@ -63,7 +64,8 @@ class BinanceWorker:
 
     async def persist(self, trades: list[dict], symbol: str) -> None:
         async with AsyncSessionLocal() as session:
-            service = TradeService(session)
+            repository = TradeRepository(session)
+            service = TradeService(repository)
             inserted = await service.bulk_insert_trades(trades)
             
             logger.info(f"Data persisted | symbol={symbol} | records={inserted}")
