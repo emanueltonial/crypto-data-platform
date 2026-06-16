@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.api.routes import trade
+from app.api.routes import api_router
 from app.core.logging import setup_logging
 
 
@@ -12,4 +12,4 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(lifespan=lifespan, title="Crypto Data Platform")
-app.include_router(trade.router)
+app.include_router(api_router)
