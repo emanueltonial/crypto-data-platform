@@ -30,7 +30,7 @@ class BinanceWorker:
         try:
             response = await self.client.get(endpoint, params=params)
             response.raise_for_status()
-            logger.info(f"Request finished | status={response.status_code}")
+            logger.debug(f"Request finished | status={response.status_code}")
             return response.json()
         except httpx.TimeoutException:
             logger.error(f"Timeout accessing {endpoint}")
