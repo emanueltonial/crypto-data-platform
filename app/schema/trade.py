@@ -4,7 +4,7 @@ from decimal import Decimal
 from pydantic import BaseModel, ConfigDict
 
 
-class Trade(BaseModel):
+class TradeRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     
     id: int
