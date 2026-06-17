@@ -6,7 +6,8 @@ from app.repositories.trade_repository import TradeRepository
 class TradeService:
     def __init__(self, repository: TradeRepository) -> None:
         self.__repository = repository
-    
+    # create a get_trades
+    # refactor this, for making a endpoint trade/{symbol}
     async def get_trades_by_symbol(self, symbol: str, limit: int) -> list[Trade]:
         return await self.__repository.get_by_symbol(symbol, limit)
 

@@ -53,3 +53,13 @@ skip-magic-trailing-comma = false
 # Automatically detect the appropriate line ending
 line-ending = "auto"
 
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testhpaths = ["tests"]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "pytest>=9.1.0",
+    "pytest-asyncio>=1.4.0",
+]
