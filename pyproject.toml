@@ -55,7 +55,7 @@ line-ending = "auto"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
-testhpaths = ["tests"]
+testpaths = ["tests"]
 pythonpath = ["."]
 
 [dependency-groups]
