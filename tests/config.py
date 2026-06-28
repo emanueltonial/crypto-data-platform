@@ -1,1 +1,3 @@
-DATABASE_URL = "postgresql+asyncpg://postgres:postgres@localhost:5432/crypto_test"
+from app.core.settings import settings
+
+DATABASE_URL = settings.database_url
