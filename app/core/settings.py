@@ -3,8 +3,8 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     # database settings
-    database_url: str
     postgres_host: str
+    postgres_port: int = 5432
     postgres_db: str
     postgres_user: str
     postgres_password: str
@@ -20,4 +20,13 @@ class Settings(BaseSettings):
 
     model_config = {"env_file": ".env"}
 
+    @property
+    def database_url(self) -> str:
+        return(
+            f"postgresql+asyncpg://{self.postgres_user}"
+            f":{self.postgres_password}"
+            f"@{self.postgres_host}"
+            f":{self.postgres_port}"
+            f"/{self.postgres_db}"
+        )
 settings = Settings()  # type: ignore[call-arg]
