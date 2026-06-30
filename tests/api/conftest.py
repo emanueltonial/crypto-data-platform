@@ -1,6 +1,7 @@
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.pool import NullPool
 
 from app.api.dependencies import get_trade_service
 from app.core.database import Base
@@ -9,7 +10,7 @@ from app.repositories.trade_repository import TradeRepository
 from app.services.trade_service import TradeService
 from tests.config import DATABASE_URL
 
-test_engine = create_async_engine(DATABASE_URL, echo=False)
+test_engine = create_async_engine(DATABASE_URL, echo=False, poolclass=NullPool)
 
 TestSessionLocal = async_sessionmaker(
     bind=test_engine,
@@ -21,6 +22,7 @@ TestSessionLocal = async_sessionmaker(
 @pytest_asyncio.fixture(scope="session", autouse=True)
 async def create_tables():
     async with test_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all) # start with a empty database
         await conn.run_sync(Base.metadata.create_all)
     yield
     async with test_engine.begin() as conn:
