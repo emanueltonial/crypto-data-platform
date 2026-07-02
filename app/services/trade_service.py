@@ -1,13 +1,13 @@
 
 from app.models.trade import Trade
-from app.repositories.trade_repository import TradeRepository
+from app.repositories.trade_repository import TradeRepositoryProtocol
 
 
 class TradeService:
-    def __init__(self, repository: TradeRepository) -> None:
+    def __init__(self, repository: TradeRepositoryProtocol) -> None:
         self.__repository = repository
-    # create a get_trades
-    # refactor this, for making a endpoint trade/{symbol}
+    #TODO create a get_trades
+    #TODO refactor this, making instead a endpoint trade/{symbol}
     async def get_trades_by_symbol(self, symbol: str, limit: int) -> list[Trade]:
         return await self.__repository.get_by_symbol(symbol, limit)
 
