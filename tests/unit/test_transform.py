@@ -1,10 +1,3 @@
-"""
-Unit tests — BinanceWorker.transform()
-
-Pure logic. No DB, no HTTP. We feed a raw Binance payload and assert the
-output dict matches the Trade model's column names and types.
-"""
-
 import pandas as pd
 import pytest
 
@@ -76,8 +69,7 @@ async def test_time_is_tz_aware_timestamp(worker: BinanceWorker):
     assert t.tzinfo is not None
 
 
-# --- symbol injection --------------------------------------------------------
-
+# symbol injection
 async def test_injects_symbol(worker: BinanceWorker):
     result = await worker.transform([RAW_TRADE], SYMBOL)
     assert result[0]["symbol"] == SYMBOL
