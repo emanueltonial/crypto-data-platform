@@ -1,9 +1,16 @@
+from typing import Protocol
+
 from sqlalchemy import CursorResult, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.trade import Trade
+
+
+class TradeRepositoryProtocol(Protocol):
+    async def get_by_symbol(self, symbol: str, limit: int) -> list[Trade]: ...
+    async def bulk_insert(self, trades: list[dict]) -> int: ...
 
 
 class TradeRepository:
