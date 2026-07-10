@@ -10,7 +10,7 @@ __pycache__/
 
 # Environment Variables & Secrets
 .env
-.env.*
+.env
 secrets.json
 
 # Database (Local SQLite)
