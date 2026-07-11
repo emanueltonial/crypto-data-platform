@@ -12,7 +12,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -22,9 +22,8 @@ services:
       retries: 5
 
   migrate:
-    build:
-      context: .
-      dockerfile: dockerfile
+    build: *app-build
+    image: crypto-data-platform:local
     env_file:
       - .env
     environment:
@@ -34,9 +33,8 @@ services:
       db:
         condition: service_healthy
   api:
-    build:
-      context: .
-      dockerfile: dockerfile
+    build: *app-build
+    image: crypto-data-platform:local
     restart: unless-stopped
     env_file:
       .env
@@ -51,9 +49,8 @@ services:
       - ./logs:/app/logs
 
   worker:
-    build:
-      context: .
-      dockerfile: dockerfile
+    build: *app-build
+    image: crypto-data-platform:local
     env_file:
       .env
     environment:
