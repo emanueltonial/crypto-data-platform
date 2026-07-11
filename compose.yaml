@@ -1,3 +1,6 @@
+x-app-build: &app-build
+  context: .
+  dockerfile: dockerfile
 services:
   db:
     image: postgres:16-alpine
