@@ -6,7 +6,7 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     env_file:
-      .env
+      - .env
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -37,7 +37,7 @@ services:
     image: crypto-data-platform:local
     restart: unless-stopped
     env_file:
-      .env
+      - .env
     ports:
       - "8000:8000"
     environment:
@@ -52,7 +52,7 @@ services:
     build: *app-build
     image: crypto-data-platform:local
     env_file:
-      .env
+      - .env
     environment:
       POSTGRES_HOST: db
     command: ["python", "-m", "worker.trade_pipeline"]
