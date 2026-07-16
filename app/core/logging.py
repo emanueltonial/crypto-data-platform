@@ -1,26 +1,23 @@
+import json
 import logging
-import logging.handlers
-from pathlib import Path
+import sys
 
-LOG_DIR = Path("logs")
-LOG_DIR.mkdir(exist_ok=True)
 
-_FMT = logging.Formatter(
-    fmt="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
+class JSONFormater(logging.Formatter):
+    def format(self, record: logging.LogRecord) -> str:
+        payload = {
+            "timestamp": self.formatTime(record, "%Y-%m-%dT%H:%MS%z"),
+            "level": record.levelname,
+            "logger": record.name,
+            "message": record.getMessage(),
+        }
+        if record.exc_info:
+            payload["exception"] = self.formatException(record.exc_info)
+        return json.dumps(payload)
 
 
 def setup_logging(level: int = logging.INFO) -> None:
-    stream_handler = logging.StreamHandler()
-    stream_handler.setFormatter(_FMT)
+    stream_handler = logging.StreamHandler(sys.stdout)
+    stream_handler.setFormatter(JSONFormater())
 
-    file_handler = logging.handlers.RotatingFileHandler(
-        LOG_DIR / "app.log",
-        maxBytes=5 * 1024 * 1024,
-        backupCount=3,
-        encoding="utf-8",
-    )
-    file_handler.setFormatter(_FMT)
-
-    logging.basicConfig(level=level, handlers=[stream_handler, file_handler])
+    logging.basicConfig(level=level, handlers=[stream_handler])
