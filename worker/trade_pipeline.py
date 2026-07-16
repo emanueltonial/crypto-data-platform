@@ -1,6 +1,5 @@
 import asyncio
 import logging
-from pathlib import Path
 
 import httpx
 import pandas as pd
@@ -12,10 +11,6 @@ from app.repositories.trade_repository import TradeRepository
 from app.services.trade_service import TradeService
 
 logger = logging.getLogger("crypto-data-platform.worker.trade_pipeline")
-
-OUTPUT_DIR = Path("data")
-OUTPUT_DIR.mkdir(exist_ok=True)
-
 
 class BinanceWorker:
     """Worker responsible for fetching, transforming, and saving trade data from Binance."""  # noqa: E501
@@ -44,7 +39,7 @@ class BinanceWorker:
 
     async def transform(self, raw_data: list, symbol: str) -> list[dict]:
         logger.info(f"Starting transformation | symbol={symbol} | records={len(raw_data)}") # noqa: E501
-        
+
         df = pd.DataFrame(raw_data)
         df["price"] = df["price"].astype(float)
         df["qty"] = df["qty"].astype(float)
@@ -58,7 +53,7 @@ class BinanceWorker:
             "isBestMatch": "is_best_match",
         })
         df["symbol"] = symbol
-        
+
         logger.info(f"Transformation finished | symbol={symbol} | shape={df.shape}")
         return df.to_dict(orient="records")
 
@@ -67,7 +62,7 @@ class BinanceWorker:
             repository = TradeRepository(session)
             service = TradeService(repository)
             inserted = await service.bulk_insert_trades(trades)
-            
+
             logger.info(f"Data persisted | symbol={symbol} | records={inserted}")
 
     async def run(self) -> None:
@@ -82,7 +77,7 @@ class BinanceWorker:
                 if raw is None:
                     logger.warning(f"No data for {symbol}. Skipping.")
                     continue
-                
+
                 trades = await self.transform(raw, symbol)
                 await self.persist(trades, symbol)
                 total_records += len(trades)
