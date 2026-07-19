@@ -55,6 +55,8 @@ jobs:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: crypto_test
+      BINANCE_BASE_URL: https://api.binance.com/api/v3
+      BINANCE_SYMBOLS: '["BTCUSDT", "SOLUSDT", "ETHUSDT"]'
 
     steps:
       - name: Checkout code
