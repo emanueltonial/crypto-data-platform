@@ -79,3 +79,48 @@ jobs:
 
       - name: Service tests
         run: uv run pytest tests/service
+
+  build:
+    name: Build & Smoke Test
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create .env for CI
+        run: |
+          cat > .env << 'EOF'
+          POSTGRES_USER=postgres
+          POSTGRES_PASSWORD=postgres
+          POSTGRES_DB=crypto_test
+          POSTGRES_PORT=5432
+          BINANCE_BASE_URL=https://api.binance.com/api/v3
+          BINANCE_SYMBOLS: '["BTCUSDT", "SOLUSDT", "ETHUSDT"]'
+          EOF
+
+      - name: Build images
+        run: docker compose build
+
+      - name: Start stack (db -> migrate -> api)
+        run: docker compose up -d --wait
+
+      - name: Smoke test API health
+        run: |
+          for i in $(seq 1 15); do
+            if curl -sf http://localhost:8000/health/; then
+              echo "API healthy"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "API did not become healthy in time"
+          exit 1
+
+      - name: Dump logs on failure
+        if: failure()
+        run: docker compose logs
+
+      - name: Tear down
+        if: always()
+        run: docker compose down -v
