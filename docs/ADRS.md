@@ -48,20 +48,25 @@
 
 **Trade-off:** One additional dependency, but eliminates a class of silent runtime failures.
 
----
-
-## ADR 006 — Temporary Excel persistence before Postgres
-
-**Decision:** The worker writes to `data/trades_{symbol}.xlsx` during the bootstrap phase.
-
-**Why:** Validates extraction and transformation without introducing database complexity early. Output is inspectable without a running Postgres instance.
-
-**Status:** Explicitly temporary. PostgreSQL via `TradeRepository` is the target persistence layer.
-
-## ADR 007 — on_conflict_do_nothing for duplicate trades
+## ADR 006 — on_conflict_do_nothing for duplicate trades
 
 **Decision:** The repository uses `on_conflict_do_nothing` based on `trade_id`.
 
 **Why:** Binance trade data is immutable — a `trade_id` never changes after execution. Ignoring duplicates is the correct behavior.
 
 **Trade-off:** No visibility into how many records were actually inserted vs. ignored. Acceptable given that the pipeline is idempotent by design.
+
+## ADR 007 — Layered testing strategy
+
+**Decision:** Tests mirror the architecture in three layers: unit/ (pure
+transform, no I/O), service/ (TradeService with FakeTradeRepository, no DB),
+api/ (endpoints against real Postgres via httpx ASGITransport).
+
+**Why:** Each layer fails for a distinct reason — unit catches logic bugs,
+service catches business-rule bugs, api catches wiring/SQL bugs. Mocking only
+the repository in service/ keeps those tests fast and DB-free; api/ stays
+un-mocked on purpose to catch what the service mock hides.
+
+**Trade-off:** api/ requires a running Postgres (crypto_test), so the full
+suite isn't fully hermetic. Acceptable — the project's types (NUMERIC,
+TIMESTAMPTZ, on_conflict) are Postgres-specific and can't be validated on SQLite.
